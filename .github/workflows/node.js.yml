@@ -1,0 +1,38 @@
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - main
+      - frontend
+      - Srouhi-patch-1
+  pull_request:
+    branches:
+      - main
+      - frontend
+      - Srouhi-patch-1
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: |
+          cd frontend
+          # Ensure package-lock.json exists
+          if [ ! -f package-lock.json ]; then
+            echo "No package-lock.json found, running npm install to generate it"
+            npm install
+          fi
+          npm ci
+          npm run build --if-present
+          npm test
